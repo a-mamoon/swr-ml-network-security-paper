@@ -4,49 +4,150 @@
 \usepackage[T1]{fontenc}
 \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
-\usepackage{algorithmic}
 \usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{xcolor}
 
+% Marker for parts that are still to be completed (shown in red in the PDF).
+\newcommand{\todo}[1]{{\color{red}\textbf{[TODO: #1]}}}
+
 \begin{document}
-	
-	\title{Machine Learning-Based Intrusion Detection in Network Infrastructure}
-	
-	\author{\IEEEauthorblockN{Ahmad Mamoon Naji}
-		\IEEEauthorblockA{\textit{Faculty of Automation and Computers} \\
-			\textit{Universitatea Politehnica Timi\c{s}oara}\\
-			Timi\c{s}oara, Romania \\
-			montem.naji@student.upt.ro}
-	}
-	
-	\maketitle
-	
-\par\noindent{\small\bfseries\textit{Abstract:} This paper investigates the integration of machine learning techniques with network infrastructure to improve security. (Abstract to be written.)\par}
+
+\title{Machine Learning-Based Intrusion Detection in Network Infrastructure}
+
+\author{\IEEEauthorblockN{Ahmad Mamoon Naji}
+\IEEEauthorblockA{\textit{Faculty of Automation and Computers} \\
+\textit{Universitatea Politehnica Timi\c{s}oara}\\
+Timi\c{s}oara, Romania \\
+montem.naji@student.upt.ro}
+}
+
+\maketitle
+
+\par\noindent{\small\bfseries\textit{Abstract:} Machine learning models for network intrusion detection often report very high accuracy on public datasets, but most of these results come from random train/test splits in which the test data looks very much like the training data. In a real network, traffic changes over time and new attack types appear. This paper measures how much the performance of three common models, Random Forest, XGBoost and a Multi-Layer Perceptron, drops when whole attack types are held out of the training data, and compares it with a standard random split on the CIC-IDS2017 dataset. Precision, recall, F1-score and false positive rate are reported, and the paper checks whether the ranking of the models stays the same under both evaluation methods. \todo{add the main numerical findings after the experiments are finished}\par}
 
 \medskip
 
-\par\noindent{\small\bfseries\textit{Index Terms:} machine learning, network security, intrusion detection, network infrastructure\par}
+\par\noindent{\small\bfseries\textit{Index Terms:} network security, intrusion detection, machine learning, unseen attacks, CIC-IDS2017\par}
 
 \bigskip
-	
-	\section{Introduction}
-	Introduction text goes here. Citations look like this \cite{b1}.
-	
-	\section{Related Work}
-	Related work goes here.
-	
-	\section{Methodology}
-	Methodology goes here.
-	
-	\section{Results}
-	Results go here.
-	
-	\section{Conclusion}
-	Conclusion goes here.
-	
-	\begin{thebibliography}{00}
-		\bibitem{b1} A. Author, ``Placeholder title,'' \textit{Journal Name}, vol. 1, no. 1, pp. 1--10, 2026.
-	\end{thebibliography}
-	
+
+\section{Introduction}
+Networks carry more and more critical services, and attacks against them, such as denial of service, port scanning and brute-force login attempts, are a constant risk. An intrusion detection system (IDS) monitors network traffic and raises an alert when it finds suspicious activity. Classical systems compare traffic with known attack signatures, which works for known attacks but cannot recognize new ones. Machine learning offers an alternative: a classifier is trained on labeled traffic and learns which patterns separate normal behavior from attacks.
+
+Many studies report very high accuracy for such classifiers on public datasets \todo{cite two or three such studies after reading them}. Most of these results come from random train/test splits, in which the test flows look very much like the training flows. In a real network, however, traffic changes over time and new kinds of attacks appear, so a deployed model must detect attacks it has never seen. In addition, the quality of the dataset itself matters: for CIC-IDS2017~\cite{sharafaldin2018}, problems in traffic generation, flow construction, feature extraction and labeling have been reported~\cite{engelen2021,lanvin2023}.
+
+This paper therefore asks three questions:
+\begin{enumerate}
+\item How well do Random Forest, XGBoost and a simple neural network detect attack types that were not part of their training data?
+\item How large is the gap between a standard random train/test split and a split that holds out whole attack types?
+\item Does the ranking of the models stay the same under both evaluation methods?
+\end{enumerate}
+
+The goal is not a new algorithm but a clear and reproducible evaluation that shows how much common models lose on unseen attacks and which metrics give a more honest picture. All code and the LaTeX source are available in the project repository.
+
+The rest of the paper is organized as follows. Section~II reviews related work, Section~III describes the methodology, Section~IV presents the results, and Section~V concludes.
+
+\section{Related Work}
+\subsection{Datasets for Intrusion Detection}
+The CIC-IDS2017 dataset was created by the Canadian Institute for Cybersecurity and contains benign traffic together with common attacks~\cite{sharafaldin2018}. It is distributed both as raw packet captures and as CSV files of labeled network flows; this work uses the CSV files. Engelen et al.\ examined the data collection pipeline of the dataset and identified problems in traffic generation, flow construction, feature extraction and labeling~\cite{engelen2021}. Lanvin et al.\ reported further flaws, such as packet misordering, packet duplication and attacks that were performed but not labeled, and assessed how corrections change the evaluation of supervised detection approaches~\cite{lanvin2023}. These findings motivate the data cleaning and the cautious interpretation of results in this paper.
+
+\subsection{Classifiers}
+Random Forest combines many decision trees, each grown on a random sample of the data and using a random selection of features at each split~\cite{breiman2001}. XGBoost builds trees sequentially with gradient boosting and is designed to be efficient and scalable~\cite{chen2016}. A Multi-Layer Perceptron (MLP) is a feed-forward neural network. All three are widely used for tabular data such as network flow features and are available in standard open-source libraries.
+
+\todo{add papers that evaluate intrusion detection on unseen or novel attacks, after reading them; group them by idea instead of describing them one by one}
+
+\section{Methodology}
+\subsection{Dataset}
+The experiments use the labeled CSV flow files of CIC-IDS2017~\cite{sharafaldin2018}, one file per capture period. Each row is one network flow described by numerical features, and each flow is labeled as benign or as one attack type. Table~\ref{tab:classes} will list the number of flows per class after cleaning.
+
+\subsection{Preprocessing}
+The same steps are applied for all models:
+\begin{enumerate}
+\item the daily CSV files are concatenated, and white space in the column names is removed;
+\item identifier columns (such as IP addresses or timestamps), if present, are removed so that the models cannot memorize them;
+\item infinite values are replaced by missing values, and rows with missing values are dropped;
+\item exact duplicate rows are removed before splitting, so that identical flows cannot appear in both the training and the test set;
+\item the original attack label is kept to define attack families, and a binary label is created (benign or attack);
+\item features are standardized for the MLP only; the scaler is fitted on the training data and applied to the test data.
+\end{enumerate}
+To reduce memory use, features are stored as 32-bit floating-point numbers. \todo{decide whether the corrected labels published for CIC-IDS2017 are used, or only the cleaning above}
+
+\subsection{Task and Evaluation Scenarios}
+The task is binary: separate benign traffic from attacks. Two scenarios are compared with the same models and metrics:
+\begin{itemize}
+\item \textbf{Scenario A (random split):} a stratified random split into 70\% training and 30\% test data with a fixed random seed. All attack types appear in both sets.
+\item \textbf{Scenario B (unseen attacks):} whole attack families are held out. For example, the models are trained on benign traffic and on DoS and port-scan attacks, and tested on benign traffic and on web attacks and brute-force attacks. Benign flows are split randomly 70/30 in both sets, so that no held-out attack family appears in the training data.
+\end{itemize}
+\todo{define the final attack families from the label names after inspecting the data, and state whether benign flows are subsampled to fit into memory}
+
+\subsection{Models}
+Three classifiers are compared, all with default hyperparameters and no tuning, so that the comparison stays simple and reproducible: Random Forest~\cite{breiman2001} and a Multi-Layer Perceptron from scikit-learn~\cite{pedregosa2011}, and XGBoost~\cite{chen2016}.
+
+\subsection{Evaluation Metrics}
+Because attacks are rare compared with normal traffic, accuracy alone is misleading. Let $TP$, $FP$, $TN$ and $FN$ be the numbers of true positives, false positives, true negatives and false negatives, where an attack is the positive class. Then
+\begin{equation}
+P=\frac{TP}{TP+FP},\quad R=\frac{TP}{TP+FN},\quad F_1=\frac{2PR}{P+R},
+\label{eq:metrics}
+\end{equation}
+\begin{equation}
+FPR=\frac{FP}{FP+TN}.
+\label{eq:fpr}
+\end{equation}
+In Scenario B the recall on the held-out attacks measures how many unseen attacks are detected. The models are then ranked by $F_1$-score in both scenarios, and the two rankings are compared.
+
+\subsection{Limitations of the Setup}
+Only one dataset, which is several years old, is used; the known labeling problems of CIC-IDS2017~\cite{engelen2021,lanvin2023} may influence the results; hyperparameters are not tuned; and the evaluation is offline, not on live traffic. The held-out families in Scenario B are a choice, and other choices may give different results.
+
+\section{Results}
+\todo{run the experiments and complete this section}
+
+\begin{table}[htbp]
+\caption{Number of flows per class after cleaning}
+\begin{center}
+\begin{tabular}{|l|c|}
+\hline
+\textbf{Class} & \textbf{Flows} \\
+\hline
+Benign & -- \\
+\hline
+\multicolumn{2}{|c|}{\todo{fill in from the data}} \\
+\hline
+\end{tabular}
+\label{tab:classes}
+\end{center}
+\end{table}
+
+\begin{table}[htbp]
+\caption{Test results in both scenarios}
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+\textbf{Model} & \textbf{Scen.} & \textbf{P} & \textbf{R} & \textbf{F1} & \textbf{FPR} \\
+\hline
+Random Forest & A & -- & -- & -- & -- \\
+\hline
+XGBoost & A & -- & -- & -- & -- \\
+\hline
+MLP & A & -- & -- & -- & -- \\
+\hline
+Random Forest & B & -- & -- & -- & -- \\
+\hline
+XGBoost & B & -- & -- & -- & -- \\
+\hline
+MLP & B & -- & -- & -- & -- \\
+\hline
+\end{tabular}
+\label{tab:results}
+\end{center}
+\end{table}
+
+\section{Conclusion}
+\todo{write the conclusion after the results are available: how large the gap between the scenarios is, whether the model ranking changes, and what this means for evaluating intrusion detection systems}
+
+Future work could add a small isolated virtual lab in which simple scans are generated, captured and classified by the trained models, and could extend the detection to an automatic response system.
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
 \end{document}
