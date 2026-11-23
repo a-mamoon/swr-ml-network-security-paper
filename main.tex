@@ -29,7 +29,7 @@ montem.naji@student.upt.ro}
 
 \maketitle
 
-\par\noindent{\small\bfseries\textit{Abstract:} \textit{Background:} Machine learning detectors for network intrusion often report very high accuracy on public datasets, yet most evaluations use random train/test splits, which do not show how a detector behaves against attack types it has never seen. \textit{Methods:} This paper evaluates Random Forest, XGBoost and a Multi-Layer Perceptron on the flow-level CIC-IDS2017 data under two scenarios: a standard random split, and a leave-one-attack-family-out split in which a whole attack family is hidden from training. Each experiment is repeated with several random seeds and evaluated with precision, recall, F1-score and false positive rate. \textit{Results:} The results will be added after the experiments are completed. \textit{Conclusion:} The study quantifies the gap between the two evaluation methods, which is the first component of a planned edge-deployable platform for network monitoring and intrusion detection.\par}
+\par\noindent{\small\bfseries\textit{Abstract:} \textit{Background:} Machine learning detectors for network intrusion often report high accuracy on public datasets, yet most evaluations use random train/test splits, which do not show how a detector behaves against attack types it has never seen. \textit{Methods:} This paper evaluates Random Forest, XGBoost and a Multi-Layer Perceptron on the flow-level CIC-IDS2017 data under two scenarios: a standard random split, and a leave-one-attack-family-out split in which a whole attack family is hidden from training. Each experiment is repeated with several random seeds and evaluated with precision, recall, F1-score and false positive rate. \textit{Results:} The results will be added after the experiments are completed. \textit{Conclusion:} The study measures the gap between the two evaluation methods. The detector it evaluates is the first component of a planned edge-deployable platform for network monitoring and intrusion detection.\par}
 
 \medskip
 
@@ -39,16 +39,16 @@ montem.naji@student.upt.ro}
 
 \section{Introduction}
 \begin{itemize}
-\item \textbf{Context.} Networks carry critical services, and attacks such as denial of service, port scanning and brute-force login attempts are a constant risk. An intrusion detection system (IDS) monitors traffic and raises alerts. Signature-based systems recognize known attacks but not new ones, while machine learning (ML) learns from labeled traffic which patterns separate normal behavior from attacks.
-\item \textbf{Problem.} ML detectors are usually evaluated with random train/test splits, where the test traffic looks very much like the training traffic. A deployed detector, however, faces changing traffic and new attacks, and applying ML in network intrusion detection has specific difficulties~\cite{sommer2010}. Common pitfalls in the evaluation of ML-based security systems can make results look better than they are~\cite{arp2022}.
-\item \textbf{Data quality.} The CIC-IDS2017 dataset~\cite{sharafaldin2018} is widely used, but problems in traffic generation, flow construction, feature extraction and labeling have been reported~\cite{engelen2021,lanvin2023,liu2022}.
-\item \textbf{Gap.} Benchmarks of classical models on CIC-IDS2017~\cite{maseer2021,rosay2022} and studies on unseen or zero-day attacks~\cite{verkerken2022,hindy2020} exist. This paper adds a direct, controlled comparison of random-split and held-out-attack evaluation, using the same data, models and metrics. \todo{confirm this gap after reading the abstracts and full texts of these papers}
+\item Organizations depend on their networks, which are regularly hit by denial-of-service traffic, port scans and brute-force login attempts. An intrusion detection system (IDS) watches the traffic and raises alerts. A signature-based system recognizes an attack it already has a rule for, while a machine learning (ML) model learns from labeled traffic how normal behavior differs from an attack.
+\item ML detectors are usually evaluated with random train/test splits, where the test traffic looks very much like the training traffic. A deployed detector, however, faces changing traffic and new attacks. Sommer and Paxson describe why network intrusion detection is a harder setting for ML than most other applications~\cite{sommer2010}, and Arp et al.\ show how common pitfalls in evaluation make security systems look better than they are~\cite{arp2022}.
+\item The CIC-IDS2017 dataset~\cite{sharafaldin2018} is widely used, but several papers report problems in its traffic generation, flow construction, feature extraction and labeling~\cite{engelen2021,lanvin2023,liu2022}.
+\item Other work benchmarks classical models on CIC-IDS2017~\cite{maseer2021,rosay2022} or studies unseen and zero-day attacks~\cite{verkerken2022,hindy2020}. This paper compares random-split and held-out-attack evaluation on the same data, with the same models and metrics. \todo{confirm this gap after reading the abstracts and full texts of these papers}
 \item \textbf{Research questions.}
   RQ1: How well do Random Forest, XGBoost and a simple neural network detect attack families that were not part of their training data?
   RQ2: How large is the gap between a random split and a split that holds out whole attack families?
   RQ3: Does the ranking of the models stay the same under both evaluation methods?
 \item \textbf{Hypothesis.} Detection performance on held-out attack families is lower than under a random split, and the drop differs between attack families.
-\item \textbf{Contributions.} (i) A reproducible protocol that compares both evaluation methods with repeated runs; (ii) an analysis of per-family detection rates; (iii) a discussion of limitations and of the implications for the planned monitoring and detection platform, which is outlined in Section~IV.
+\item \textbf{Contributions.} (i) A reproducible protocol that compares both evaluation methods with repeated runs; (ii) an analysis of per-family detection rates; (iii) a discussion of the limitations and of what they mean for the planned monitoring and detection platform of Section~IV.
 \item \textbf{Structure.} Section~II reviews related work, Section~III describes the evaluation methodology, Section~IV outlines the planned platform and its intended methodology, Section~V presents the results, Section~VI discusses them, and Section~VII concludes.
 \end{itemize}
 
@@ -56,10 +56,10 @@ montem.naji@student.upt.ro}
 \subsection{Datasets and Data Quality}
 \begin{itemize}
 \item CIC-IDS2017 contains benign traffic and common attacks, distributed as packet captures and as CSV files of labeled flows~\cite{sharafaldin2018}.
-\item Network-based intrusion detection datasets have been surveyed and compared by their properties~\cite{ring2019}, and CIC-IDS2017 has been analyzed in detail~\cite{rosay2022}.
-\item Several studies reported errors in the dataset and showed that correcting them changes the evaluation of detectors~\cite{engelen2021,lanvin2023,liu2022}.
+\item Ring et al.\ survey network-based intrusion detection datasets and compare their properties~\cite{ring2019}, and Rosay et al.\ analyze CIC-IDS2017 in detail~\cite{rosay2022}.
+\item Engelen et al., Lanvin et al.\ and Liu et al.\ report errors in the dataset and show that correcting them changes how detectors score~\cite{engelen2021,lanvin2023,liu2022}.
 \item Tran et al.\ study data curation and quality evaluation for ML-based intrusion detection and point out duplicate data in CIC-IDS2017~\cite{tran2022}. \todo{confirm which quality problems they report after reading}
-\item Implication: careful preprocessing and cautious interpretation of results are needed in this paper.
+\item Because of these problems, this paper cleans the data before training and treats published accuracy figures with care.
 \end{itemize}
 
 \subsection{ML for Intrusion Detection and Its Evaluation}
@@ -80,7 +80,7 @@ montem.naji@student.upt.ro}
 
 \subsection{Classifiers Used in This Work}
 \begin{itemize}
-\item Random Forest~\cite{breiman2001}, XGBoost~\cite{chen2016} and a Multi-Layer Perceptron (MLP), all available in open-source libraries~\cite{pedregosa2011}.
+\item This paper uses Random Forest~\cite{breiman2001}, XGBoost~\cite{chen2016} and a Multi-Layer Perceptron (MLP). All three are available in open-source libraries~\cite{pedregosa2011}.
 \end{itemize}
 
 \subsection{Literature Search Protocol}
@@ -90,7 +90,7 @@ montem.naji@student.upt.ro}
 \item \textbf{Search strings} (OR inside a group, AND between groups). S1, generalization: (``intrusion detection'' AND ``machine learning'' AND (CICIDS2017 OR ``CIC-IDS2017'') AND (``unseen attack'' OR ``unknown attack'' OR ``zero-day'' OR ``novel attack'' OR generalization)). S2, data quality: (``intrusion detection'' AND (CICIDS2017 OR ``CIC-IDS2017'') AND (``label error'' OR ``labelling errors'' OR ``dataset errors'' OR ``data quality'' OR flaws)).
 \item \textbf{Inclusion.} Peer-reviewed journal articles, conference papers and books; English; relevant to ML-based network intrusion detection; recent work from the last ten years, plus seminal works.
 \item \textbf{Exclusion.} Duplicates, preprints and technical reports, papers without a described evaluation.
-\item \textbf{Screening.} Both searches were run on 22 November 2026. S1 returned 175 records in IEEE Xplore and about 14{,}700 in Google Scholar; S2 returned 19 records in IEEE Xplore and about 5{,}030 in Google Scholar. Because the Google Scholar counts are very large and the results are ordered by relevance, screening was limited to the first part of each result list: the first ten Google Scholar results of each search, the first 25 IEEE Xplore results of S1, and all 19 IEEE Xplore results of S2. Titles and abstracts were checked against the criteria above. The remaining references were identified with the help of a generative AI assistant and from the reference lists of the selected studies, and every reference was then verified by the author on the publisher page. In total, 17 papers were included.
+\item \textbf{Screening.} Both searches were run on 22 November 2026. S1 returned 175 records in IEEE Xplore and about 14{,}700 in Google Scholar; S2 returned 19 records in IEEE Xplore and about 5{,}030 in Google Scholar. Because the Google Scholar counts are large and the results are ordered by relevance, screening was limited to the first part of each result list: the first ten Google Scholar results of each search, the first 25 IEEE Xplore results of S1, and all 19 IEEE Xplore results of S2. Titles and abstracts were checked against the criteria above. The remaining references were identified with the help of a generative AI assistant and from the reference lists of the selected studies, and every reference was then verified by the author on the publisher page. In total, 17 papers were included.
 \end{itemize}
 
 \section{Methodology}
@@ -143,18 +143,18 @@ F_1=\tfrac{2PR}{P+R},\; FPR=\tfrac{FP}{FP+TN}.
 \section{Planned Platform and Intended Methodology}
 \subsection{Motivation and Scope}
 \begin{itemize}
-\item The long-term goal of the author's dissertation is an edge-deployable platform that combines network monitoring with machine learning-based intrusion detection for small and medium networks, for example those of small enterprises.
-\item Monitoring tools such as Zabbix mainly report device and performance status, and they do not detect attacks by themselves; commercial security appliances can be costly. \todo{add a reference for this statement}
-\item The platform is planned with low-cost, open-source components. The author has preliminary experience with a Zabbix-based monitoring lab with a rule-based assistant, which motivates this work. \todo{confirm this wording with the supervisor}
+\item The author's dissertation aims at an edge-deployable platform that combines network monitoring with machine learning-based intrusion detection for small and medium networks.
+\item Monitoring tools such as Zabbix report device and performance status, and they do not detect attacks. Commercial appliances that do are expensive. \todo{add a reference for this statement}
+\item The platform is planned with low-cost, open-source components. The author has already worked on a Zabbix-based monitoring lab with a rule-based assistant. \todo{confirm this wording with the supervisor}
 \item This paper evaluates only the offline detection model (Sections III and V). The platform itself is planned and is \emph{not} evaluated here.
 \end{itemize}
 
 \subsection{Planned Architecture}
 \begin{itemize}
-\item An Ubuntu-based sensor receives a copy of the network traffic through a mirror port, so that it observes the traffic without interrupting it. Kali Linux is used only inside the lab to generate attacks.
+\item An Ubuntu-based sensor receives a copy of the network traffic through a mirror port, so it sees the traffic without standing in its path. Kali Linux runs only inside the lab, to generate the attacks.
 \item The sensor extracts flow features, applies the detectors, and shows alerts with explanations on a dashboard (Fig.~\ref{fig:arch}).
 \item Integration with a monitoring tool such as Zabbix is optional and uses its API: the platform works with or without it.
-\item A language-model-based assistant is planned to explain alerts to the administrator in plain language, using data from the detectors and, if enabled, from the monitoring tool.
+\item A language-model-based assistant will explain alerts to the administrator in plain language. It reads data from the detectors and, if enabled, from the monitoring tool.
 \end{itemize}
 
 \begin{figure}[t]
@@ -188,10 +188,10 @@ F_1=\tfrac{2PR}{P+R},\; FPR=\tfrac{FP}{FP+TN}.
 
 \subsection{Intended Lab Evaluation}
 \begin{itemize}
-\item A virtual enterprise lab with several hosts, switches and a firewall, with a mirror port connected to the sensor. \todo{confirm the images and tools available for the lab}
-\item Normal traffic is generated with scripts, and attacks are launched from Kali Linux and chosen to match attack families of CIC-IDS2017, such as port scans, denial of service and brute force.
+\item The lab is a virtual enterprise network with several hosts, switches and a firewall, and a mirror port that feeds the sensor. \todo{confirm the images and tools available for the lab}
+\item Scripts generate the normal traffic. The attacks come from Kali Linux and match attack families of CIC-IDS2017, such as port scans, denial of service and brute force.
 \item Metrics: detection rate per attack, false alarm rate on normal traffic, time to detect, and CPU and memory use on the sensor.
-\item A drop in performance between the public dataset and the lab traffic is expected, and it is measured as part of the evaluation.
+\item Performance is expected to drop between the public dataset and the lab traffic, and this drop is measured as part of the evaluation.
 \item Automatic blocking is an optional later step, with human approval and a list of addresses that are never blocked.
 \end{itemize}
 
@@ -206,7 +206,7 @@ F_1=\tfrac{2PR}{P+R},\; FPR=\tfrac{FP}{FP+TN}.
 \item Class distribution after cleaning (table).
 \item Results of both scenarios for each model, as mean $\pm$ standard deviation (Table~\ref{tab:results}).
 \item Detection rate for each held-out attack family (bar chart).
-\item Answers to RQ1--RQ3, stated in one clear sentence each.
+\item Answers to RQ1--RQ3, one sentence each.
 \end{itemize}
 
 \begin{table}[t]
@@ -240,7 +240,7 @@ MLP & A / B & -- & -- & -- & -- \\
 \item Main findings and answers to RQ1--RQ3, to be written after the results.
 \item Contributions: a reproducible comparison of random-split and held-out-attack evaluation.
 \item Limitations, as listed in the discussion.
-\item Future work: the platform described in Section~IV, with tests on traffic from an own virtual lab, an anomaly detector, explanations of alerts, measurements on a single-board computer, and an optional response module with human approval.
+\item Future work: the platform described in Section~IV, with tests on traffic from the author's own virtual lab, an anomaly detector, explanations of alerts, measurements on a single-board computer, and an optional response module with human approval.
 \end{itemize}
 
 \section*{Author Contributions}
