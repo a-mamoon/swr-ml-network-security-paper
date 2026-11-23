@@ -1,14 +1,15 @@
-% Open each source and verify the details before the final submission.
-% TODO: for sharafaldin2018, add pages and DOI from the ICISSP proceedings page.
-% TODO: pedregosa2011 was written from memory, verify it.
+% Reference status (checked against publisher / indexing pages on 2026-11-21).
+% Before submission: open each paper yourself, read the abstract, and confirm the details.
+% Missing on purpose: no DOI for maseer2021, tran2022 and cantone2024 (not found on the pages I checked).
+% To confirm: the page range and DOI of cantone2024 (only the first page, 144489, is confirmed).
 
 @inproceedings{sharafaldin2018,
   author    = {Sharafaldin, Iman and Habibi Lashkari, Arash and Ghorbani, Ali A.},
   title     = {Toward Generating a New Intrusion Detection Dataset and Intrusion Traffic Characterization},
   booktitle = {Proc. 4th Int. Conf. Information Systems Security and Privacy (ICISSP)},
-  address   = {Portugal},
-  month     = jan,
-  year      = {2018}
+  pages     = {108--116},
+  year      = {2018},
+  doi       = {10.5220/0006639801080116}
 }
 
 @inproceedings{engelen2021,
@@ -18,6 +19,15 @@
   pages     = {7--12},
   year      = {2021},
   doi       = {10.1109/SPW53761.2021.00009}
+}
+
+@inproceedings{liu2022,
+  author    = {Liu, Lisa and Engelen, Gints and Lynar, Timothy and Essam, Daryl and Joosen, Wouter},
+  title     = {Error Prevalence in {NIDS} Datasets: A Case Study on {CIC-IDS-2017} and {CSE-CIC-IDS-2018}},
+  booktitle = {Proc. IEEE Conf. Communications and Network Security (CNS)},
+  pages     = {254--263},
+  year      = {2022},
+  doi       = {10.1109/CNS56114.2022.9947235}
 }
 
 @inproceedings{lanvin2023,
@@ -30,6 +40,72 @@
   pages     = {18--33},
   year      = {2023},
   doi       = {10.1007/978-3-031-31108-6_2}
+}
+
+@inproceedings{rosay2022,
+  author    = {Rosay, Arnaud and Cheval, Elo{\"i}se and Carlier, Florent and Leroux, Pascal},
+  title     = {Network Intrusion Detection: A Comprehensive Analysis of {CIC-IDS2017}},
+  booktitle = {Proc. 8th Int. Conf. Information Systems Security and Privacy (ICISSP)},
+  pages     = {25--36},
+  year      = {2022},
+  doi       = {10.5220/0010774000003120}
+}
+
+@article{ring2019,
+  author  = {Ring, M. and Wunderlich, S. and Scheuring, D. and Landes, D. and Hotho, A.},
+  title   = {A survey of network-based intrusion detection data sets},
+  journal = {Computers \& Security},
+  volume  = {86},
+  pages   = {147--167},
+  year    = {2019},
+  doi     = {10.1016/j.cose.2019.06.005}
+}
+
+@article{maseer2021,
+  author  = {Maseer, Ziadoon Kamil and Yusof, Robiah and Bahaman, Nazrulazhar and Mostafa, Salama A. and Foozy, Cik Feresa Mohd},
+  title   = {Benchmarking of Machine Learning for Anomaly Based Intrusion Detection Systems in the {CICIDS2017} Dataset},
+  journal = {IEEE Access},
+  volume  = {9},
+  pages   = {22351--22370},
+  year    = {2021}
+}
+
+@inproceedings{sommer2010,
+  author    = {Sommer, Robin and Paxson, Vern},
+  title     = {Outside the Closed World: On Using Machine Learning for Network Intrusion Detection},
+  booktitle = {Proc. IEEE Symp. Security and Privacy (S\&P)},
+  pages     = {305--316},
+  year      = {2010},
+  doi       = {10.1109/SP.2010.25}
+}
+
+@inproceedings{arp2022,
+  author    = {Arp, Daniel and Quiring, Erwin and Pendlebury, Feargus and Warnecke, Alexander and Pierazzi, Fabio and Wressnegger, Christian and Cavallaro, Lorenzo and Rieck, Konrad},
+  title     = {Dos and Don'ts of Machine Learning in Computer Security},
+  booktitle = {Proc. 31st USENIX Security Symp.},
+  pages     = {3971--3988},
+  year      = {2022}
+}
+
+@article{verkerken2022,
+  author  = {Verkerken, Miel and D'hooge, Laurens and Wauters, Tim and Volckaert, Bruno and De Turck, Filip},
+  title   = {Towards Model Generalization for Intrusion Detection: Unsupervised Machine Learning Techniques},
+  journal = {J. Netw. Syst. Manag.},
+  volume  = {30},
+  year    = {2022},
+  note    = {Art. no. 12},
+  doi     = {10.1007/s10922-021-09615-7}
+}
+
+@article{hindy2020,
+  author  = {Hindy, Hanan and Atkinson, Robert and Tachtatzis, Christos and Colin, Jean-No{\"e}l and Bayne, Ethan and Bellekens, Xavier},
+  title   = {Utilising Deep Learning Techniques for Effective Zero-Day Attack Detection},
+  journal = {Electronics},
+  volume  = {9},
+  number  = {10},
+  year    = {2020},
+  note    = {Art. no. 1684},
+  doi     = {10.3390/electronics9101684}
 }
 
 @article{breiman2001,
@@ -59,4 +135,32 @@
   volume  = {12},
   pages   = {2825--2830},
   year    = {2011}
+}
+
+@article{cantone2024,
+  author  = {Cantone, Marco and Marrocco, Claudio and Bria, Alessandro},
+  title   = {Machine Learning in Network Intrusion Detection: A Cross-Dataset Generalization Study},
+  journal = {IEEE Access},
+  volume  = {12},
+  pages   = {144489},
+  year    = {2024}
+}
+
+@article{dhooge2020,
+  author  = {D'hooge, Laurens and Wauters, Tim and Volckaert, Bruno and De Turck, Filip},
+  title   = {Inter-dataset generalization strength of supervised machine learning methods for intrusion detection},
+  journal = {Journal of Information Security and Applications},
+  volume  = {54},
+  year    = {2020},
+  note    = {Art. no. 102564},
+  doi     = {10.1016/j.jisa.2020.102564}
+}
+
+@article{tran2022,
+  author  = {Tran, Ngan and Chen, Haihua and Bhuyan, Jay and Ding, Junhua},
+  title   = {Data Curation and Quality Evaluation for Machine Learning-Based Cyber Intrusion Detection},
+  journal = {IEEE Access},
+  volume  = {10},
+  pages   = {121900--121923},
+  year    = {2022}
 }
