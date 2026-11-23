@@ -58,6 +58,7 @@ montem.naji@student.upt.ro}
 \item CIC-IDS2017 contains benign traffic and common attacks, distributed as packet captures and as CSV files of labeled flows~\cite{sharafaldin2018}.
 \item Network-based intrusion detection datasets have been surveyed and compared by their properties~\cite{ring2019}, and CIC-IDS2017 has been analyzed in detail~\cite{rosay2022}.
 \item Several studies reported errors in the dataset and showed that correcting them changes the evaluation of detectors~\cite{engelen2021,lanvin2023,liu2022}.
+\item Tran et al.\ study data curation and quality evaluation for ML-based intrusion detection and point out duplicate data in CIC-IDS2017~\cite{tran2022}. \todo{confirm which quality problems they report after reading}
 \item Implication: careful preprocessing and cautious interpretation of results are needed in this paper.
 \end{itemize}
 
@@ -72,6 +73,9 @@ montem.naji@student.upt.ro}
 \begin{itemize}
 \item Verkerken et al.\ evaluate unsupervised detectors on unseen attacks and find that they can catch them when the malicious traffic differs enough from benign traffic; they also propose an inter-dataset evaluation~\cite{verkerken2022}.
 \item Hindy et al.\ study deep learning for zero-day attack detection~\cite{hindy2020}.
+\item D'hooge et al.\ measure how well supervised models trained on one intrusion detection dataset perform on a different dataset~\cite{dhooge2020}. \todo{confirm the datasets and the size of the drop after reading}
+\item Cantone et al.\ report a cross-dataset generalization study and observe high performance within a dataset and a clear drop when the models are tested on another dataset~\cite{cantone2024}. \todo{confirm the reported numbers after reading}
+\item These studies change the dataset between training and testing; this paper keeps one dataset and changes the attack families instead.
 \end{itemize}
 
 \subsection{Classifiers Used in This Work}
@@ -81,12 +85,12 @@ montem.naji@student.upt.ro}
 
 \subsection{Literature Search Protocol}
 \begin{itemize}
-\item \textbf{Search question.} Which studies evaluate ML-based network intrusion detection on CIC-IDS2017 or on unseen attacks, and which dataset-quality problems have been reported?
-\item \textbf{Sources.} IEEE Xplore and Google Scholar, plus citation tracking in the reference lists of the selected papers.
-\item \textbf{Search string} (OR inside a group, AND between groups): (``intrusion detection'' OR IDS OR NIDS) AND (``machine learning'' OR ``deep learning'' OR classifier) AND (CICIDS2017 OR ``CIC-IDS2017'') AND (``unseen attack'' OR ``zero-day'' OR ``novel attack'' OR generalization OR ``label error'').
+\item \textbf{Search questions.} Which studies evaluate ML-based network intrusion detection on CIC-IDS2017 or on attacks that were not seen during training, and which dataset-quality problems of CIC-IDS2017 have been reported?
+\item \textbf{Sources.} IEEE Xplore and Google Scholar, complemented by papers found in the reference lists of the selected studies.
+\item \textbf{Search strings} (OR inside a group, AND between groups). S1, generalization: (``intrusion detection'' AND ``machine learning'' AND (CICIDS2017 OR ``CIC-IDS2017'') AND (``unseen attack'' OR ``unknown attack'' OR ``zero-day'' OR ``novel attack'' OR generalization)). S2, data quality: (``intrusion detection'' AND (CICIDS2017 OR ``CIC-IDS2017'') AND (``label error'' OR ``labelling errors'' OR ``dataset errors'' OR ``data quality'' OR flaws)).
 \item \textbf{Inclusion.} Peer-reviewed journal articles, conference papers and books; English; relevant to ML-based network intrusion detection; recent work from the last ten years, plus seminal works.
 \item \textbf{Exclusion.} Duplicates, preprints and technical reports, papers without a described evaluation.
-\item \textbf{Screening.} Abstract screening, then full-text screening, then a quality check. \todo{record the real numbers at each stage, using the tracking sheet in the repository}
+\item \textbf{Screening.} Both searches were run on 22 November 2026. S1 returned 175 records in IEEE Xplore and about 14{,}700 in Google Scholar; S2 returned 19 records in IEEE Xplore and about 5{,}030 in Google Scholar. Because the Google Scholar counts are very large and the results are ordered by relevance, screening was limited to the first part of each result list: the first ten Google Scholar results of each search, the first 25 IEEE Xplore results of S1, and all 19 IEEE Xplore results of S2. Titles and abstracts were checked against the criteria above. The remaining references were identified with the help of a generative AI assistant and from the reference lists of the selected studies, and every reference was then verified by the author on the publisher page. In total, 17 papers were included.
 \end{itemize}
 
 \section{Methodology}
@@ -243,7 +247,7 @@ MLP & A / B & -- & -- & -- & -- \\
 A.~M.~Naji: Conceptualization, Methodology, Writing -- original draft, Writing -- review and editing.
 
 \section*{Declaration of Generative AI Use}
-In the preparation of this manuscript, the author used generative AI assistants to support the writing and technical workflow, specifically for brainstorming structure and methodology options, editing text and LaTeX code for clarity and readability, and assisting in preliminary literature discovery. All final decisions regarding the study structure, evaluation design, implementation, and experimental analysis were made independently by the author. Every candidate reference was manually retrieved, read, and verified against its original publication, and all text was thoroughly reviewed, rewritten, and validated by the author, who takes full responsibility for the scientific content and judgments of this paper. No AI tool is listed as an author
+In the preparation of this manuscript, the author used generative AI assistants to support the writing and technical workflow, specifically for brainstorming structure and methodology options, editing text and LaTeX code for clarity and readability, and assisting in preliminary literature discovery. All final decisions regarding the study structure, evaluation design, implementation, and experimental analysis were made independently by the author. Every candidate reference was manually retrieved, read, and verified against its original publication, and all text was thoroughly reviewed, rewritten, and validated by the author, who takes full responsibility for the scientific content and judgments of this paper. No AI tool is listed as an author.
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
