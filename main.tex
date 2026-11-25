@@ -38,91 +38,64 @@ montem.naji@student.upt.ro}
 \bigskip
 
 \section{Introduction}
-\begin{itemize}
-\item Organizations depend on their networks, which are regularly hit by denial-of-service traffic, port scans and brute-force login attempts. An intrusion detection system (IDS) watches the traffic and raises alerts. A signature-based system recognizes an attack it already has a rule for, while a machine learning (ML) model learns from labeled traffic how normal behavior differs from an attack.
-\item ML detectors are usually evaluated with random train/test splits, where the test traffic looks very much like the training traffic. A deployed detector, however, faces changing traffic and new attacks. Sommer and Paxson describe why network intrusion detection is a harder setting for ML than most other applications~\cite{sommer2010}, and Arp et al.\ show how common pitfalls in evaluation make security systems look better than they are~\cite{arp2022}.
-\item The CIC-IDS2017 dataset~\cite{sharafaldin2018} is widely used, but several papers report problems in its traffic generation, flow construction, feature extraction and labeling~\cite{engelen2021,lanvin2023,liu2022}.
-\item Other work benchmarks classical models on CIC-IDS2017~\cite{maseer2021,rosay2022} or studies unseen and zero-day attacks~\cite{verkerken2022,hindy2020}. This paper compares random-split and held-out-attack evaluation on the same data, with the same models and metrics. \todo{confirm this gap after reading the abstracts and full texts of these papers}
-\item \textbf{Research questions.}
-  RQ1: How well do Random Forest, XGBoost and a simple neural network detect attack families that were not part of their training data?
-  RQ2: How large is the gap between a random split and a split that holds out whole attack families?
-  RQ3: Does the ranking of the models stay the same under both evaluation methods?
-\item \textbf{Hypothesis.} Detection performance on held-out attack families is lower than under a random split, and the drop differs between attack families.
-\item \textbf{Contributions.} (i) A reproducible protocol that compares both evaluation methods with repeated runs; (ii) an analysis of per-family detection rates; (iii) a discussion of the limitations and of what they mean for the planned monitoring and detection platform of Section~IV.
-\item \textbf{Structure.} Section~II reviews related work, Section~III describes the evaluation methodology, Section~IV outlines the planned platform and its intended methodology, Section~V presents the results, Section~VI discusses them, and Section~VII concludes.
-\end{itemize}
+Organizations depend on their networks, and those networks are regularly hit by denial-of-service traffic, port scans and brute-force login attempts. An intrusion detection system (IDS) watches the traffic and raises an alert when it sees something suspicious. A signature-based IDS recognizes an attack only when it already has a rule for it, while a machine learning (ML) model learns from labeled traffic how normal behavior differs from an attack.
+
+ML detectors are usually evaluated with a random train/test split, where the test traffic looks very much like the training traffic. A deployed detector, however, faces traffic that changes over time and attacks that did not exist when the model was trained. Sommer and Paxson describe why network intrusion detection is a harder setting for ML than most other applications~\cite{sommer2010}, and Arp et al.\ show how common pitfalls in evaluation make security systems look better than they are~\cite{arp2022}.
+
+The data used for these evaluations is itself a source of error. The CIC-IDS2017 dataset~\cite{sharafaldin2018} is widely used, but several papers report problems in its traffic generation, flow construction, feature extraction and labeling~\cite{engelen2021,lanvin2023,liu2022}.
+
+Other work benchmarks classical models on CIC-IDS2017~\cite{maseer2021,rosay2022} or studies unseen and zero-day attacks~\cite{verkerken2022,hindy2020}. This paper compares random-split and held-out-attack evaluation on the same data, with the same models and the same metrics, and asks three questions. \todo{confirm this gap after reading the abstracts and full texts of these papers}
+\begin{enumerate}
+\item[RQ1:] How well do Random Forest, XGBoost and a simple neural network detect attack families that were not part of their training data?
+\item[RQ2:] How large is the gap between a random split and a split that holds out whole attack families?
+\item[RQ3:] Does the ranking of the models stay the same under both evaluation methods?
+\end{enumerate}
+The hypothesis is that detection performance on held-out attack families is lower than under a random split, and that the drop differs between attack families.
+
+The contributions of this paper are a reproducible protocol that compares both evaluation methods with repeated runs, an analysis of per-family detection rates, and a discussion of the limitations and of what they mean for the planned monitoring and detection platform of Section~IV. Section~II reviews related work, Section~III describes the evaluation methodology, Section~IV outlines the planned platform and its intended methodology, Section~V presents the results, Section~VI discusses them, and Section~VII concludes.
 
 \section{Related Work}
 \subsection{Datasets and Data Quality}
-\begin{itemize}
-\item CIC-IDS2017 contains benign traffic and common attacks, distributed as packet captures and as CSV files of labeled flows~\cite{sharafaldin2018}.
-\item Ring et al.\ survey network-based intrusion detection datasets and compare their properties~\cite{ring2019}, and Rosay et al.\ analyze CIC-IDS2017 in detail~\cite{rosay2022}.
-\item Engelen et al., Lanvin et al.\ and Liu et al.\ report errors in the dataset and show that correcting them changes how detectors score~\cite{engelen2021,lanvin2023,liu2022}.
-\item Tran et al.\ study data curation and quality evaluation for ML-based intrusion detection and point out duplicate data in CIC-IDS2017~\cite{tran2022}. \todo{confirm which quality problems they report after reading}
-\item Because of these problems, this paper cleans the data before training and treats published accuracy figures with care.
-\end{itemize}
+CIC-IDS2017 contains benign traffic together with common attacks, and is distributed both as packet captures and as CSV files of labeled flows~\cite{sharafaldin2018}. Ring et al.\ survey network-based intrusion detection datasets and compare their properties~\cite{ring2019}, and Rosay et al.\ analyze CIC-IDS2017 in detail~\cite{rosay2022}. Engelen et al., Lanvin et al.\ and Liu et al.\ report errors in the dataset and show that correcting them changes how detectors score~\cite{engelen2021,lanvin2023,liu2022}. Tran et al.\ study data curation and quality evaluation for ML-based intrusion detection and point out duplicate data in CIC-IDS2017~\cite{tran2022}. \todo{confirm which quality problems they report after reading} Because of these problems, this paper cleans the data before training and treats published accuracy figures with care.
 
 \subsection{ML for Intrusion Detection and Its Evaluation}
-\begin{itemize}
-\item Sommer and Paxson discuss why ML for network intrusion detection is harder than other ML applications and give guidance for its evaluation~\cite{sommer2010}.
-\item Arp et al.\ identify common pitfalls in the design and evaluation of ML-based security systems~\cite{arp2022}. \todo{list the pitfalls that are relevant to this paper after reading}
-\item Maseer et al.\ benchmark ML methods for anomaly-based intrusion detection on CIC-IDS2017~\cite{maseer2021}. \todo{note which evaluation protocol and which results they report}
-\end{itemize}
+Sommer and Paxson discuss why ML for network intrusion detection is harder than other ML applications and give guidance for its evaluation~\cite{sommer2010}. Arp et al.\ identify common pitfalls in the design and evaluation of ML-based security systems~\cite{arp2022}. \todo{list the pitfalls that are relevant to this paper after reading} Maseer et al.\ benchmark ML methods for anomaly-based intrusion detection on CIC-IDS2017~\cite{maseer2021}. \todo{note which evaluation protocol and which results they report}
 
 \subsection{Generalization to Unseen Attacks}
-\begin{itemize}
-\item Verkerken et al.\ evaluate unsupervised detectors on unseen attacks and find that they can catch them when the malicious traffic differs enough from benign traffic; they also propose an inter-dataset evaluation~\cite{verkerken2022}.
-\item Hindy et al.\ study deep learning for zero-day attack detection~\cite{hindy2020}.
-\item D'hooge et al.\ measure how well supervised models trained on one intrusion detection dataset perform on a different dataset~\cite{dhooge2020}. \todo{confirm the datasets and the size of the drop after reading}
-\item Cantone et al.\ report a cross-dataset generalization study and observe high performance within a dataset and a clear drop when the models are tested on another dataset~\cite{cantone2024}. \todo{confirm the reported numbers after reading}
-\item These studies change the dataset between training and testing; this paper keeps one dataset and changes the attack families instead.
-\end{itemize}
+Verkerken et al.\ evaluate unsupervised detectors on unseen attacks and find that they can catch them when the malicious traffic differs enough from benign traffic; they also propose an inter-dataset evaluation~\cite{verkerken2022}. Hindy et al.\ study deep learning for zero-day attack detection~\cite{hindy2020}. D'hooge et al.\ measure how well supervised models trained on one intrusion detection dataset perform on a different dataset~\cite{dhooge2020}, \todo{confirm the datasets and the size of the drop after reading} and Cantone et al.\ report a cross-dataset generalization study in which performance is high within a dataset and drops clearly when the models are tested on another one~\cite{cantone2024}. \todo{confirm the reported numbers after reading} These studies change the dataset between training and testing; this paper keeps one dataset and changes the attack families instead.
 
 \subsection{Classifiers Used in This Work}
-\begin{itemize}
-\item This paper uses Random Forest~\cite{breiman2001}, XGBoost~\cite{chen2016} and a Multi-Layer Perceptron (MLP). All three are available in open-source libraries~\cite{pedregosa2011}.
-\end{itemize}
+This paper uses Random Forest~\cite{breiman2001}, XGBoost~\cite{chen2016} and a Multi-Layer Perceptron (MLP). All three are available in open-source libraries~\cite{pedregosa2011}.
 
 \subsection{Literature Search Protocol}
+The references were collected with a small search protocol. The search questions were which studies evaluate ML-based network intrusion detection on CIC-IDS2017 or on attacks that were not seen during training, and which dataset-quality problems of CIC-IDS2017 have been reported. The sources were IEEE Xplore and Google Scholar, complemented by papers found in the reference lists of the selected studies. Two search strings were used, with OR inside a group and AND between groups. S1, on generalization, was (``intrusion detection'' AND ``machine learning'' AND (CICIDS2017 OR ``CIC-IDS2017'') AND (``unseen attack'' OR ``unknown attack'' OR ``zero-day'' OR ``novel attack'' OR generalization)). S2, on data quality, was (``intrusion detection'' AND (CICIDS2017 OR ``CIC-IDS2017'') AND (``label error'' OR ``labelling errors'' OR ``dataset errors'' OR ``data quality'' OR flaws)). Two criteria decided which records were kept:
 \begin{itemize}
-\item \textbf{Search questions.} Which studies evaluate ML-based network intrusion detection on CIC-IDS2017 or on attacks that were not seen during training, and which dataset-quality problems of CIC-IDS2017 have been reported?
-\item \textbf{Sources.} IEEE Xplore and Google Scholar, complemented by papers found in the reference lists of the selected studies.
-\item \textbf{Search strings} (OR inside a group, AND between groups). S1, generalization: (``intrusion detection'' AND ``machine learning'' AND (CICIDS2017 OR ``CIC-IDS2017'') AND (``unseen attack'' OR ``unknown attack'' OR ``zero-day'' OR ``novel attack'' OR generalization)). S2, data quality: (``intrusion detection'' AND (CICIDS2017 OR ``CIC-IDS2017'') AND (``label error'' OR ``labelling errors'' OR ``dataset errors'' OR ``data quality'' OR flaws)).
-\item \textbf{Inclusion.} Peer-reviewed journal articles, conference papers and books; English; relevant to ML-based network intrusion detection; recent work from the last ten years, plus seminal works.
-\item \textbf{Exclusion.} Duplicates, preprints and technical reports, papers without a described evaluation.
-\item \textbf{Screening.} Both searches were run on 22 November 2026. S1 returned 175 records in IEEE Xplore and about 14{,}700 in Google Scholar; S2 returned 19 records in IEEE Xplore and about 5{,}030 in Google Scholar. Because the Google Scholar counts are large and the results are ordered by relevance, screening was limited to the first part of each result list: the first ten Google Scholar results of each search, the first 25 IEEE Xplore results of S1, and all 19 IEEE Xplore results of S2. Titles and abstracts were checked against the criteria above. The remaining references were identified with the help of a generative AI assistant and from the reference lists of the selected studies, and every reference was then verified by the author on the publisher page. In total, 17 papers were included.
+\item \emph{Inclusion:} peer-reviewed journal articles, conference papers and books; English; relevant to ML-based network intrusion detection; recent work from the last ten years, plus seminal works.
+\item \emph{Exclusion:} duplicates, preprints and technical reports, and papers without a described evaluation.
 \end{itemize}
+Both searches were run on 22 November 2026. S1 returned 175 records in IEEE Xplore and about 14{,}700 in Google Scholar; S2 returned 19 records in IEEE Xplore and about 5{,}030 in Google Scholar. Because the Google Scholar counts are large and the results are ordered by relevance, screening was limited to the first part of each result list: the first ten Google Scholar results of each search, the first 25 IEEE Xplore results of S1, and all 19 IEEE Xplore results of S2. Titles and abstracts were checked against the criteria above. The remaining references were identified with the help of a generative AI assistant and from the reference lists of the selected studies, and every reference was then verified by the author on the publisher page. In total, 17 papers were included.
 
 \section{Methodology}
 \subsection{Dataset}
-\begin{itemize}
-\item The labeled CSV flow files of CIC-IDS2017~\cite{sharafaldin2018}; each row is one network flow with numerical features and a label (benign or an attack type such as brute force, DoS/DDoS, web attack, infiltration, botnet or port scan).
-\item The class distribution after cleaning will be reported in the results.
-\end{itemize}
+The experiments use the labeled CSV flow files of CIC-IDS2017~\cite{sharafaldin2018}. Each row is one network flow described by numerical features, and it carries a label that is either benign or an attack type such as brute force, DoS/DDoS, web attack, infiltration, botnet or port scan. The class distribution after cleaning will be reported together with the results.
 
 \subsection{Preprocessing}
-\begin{itemize}
-\item Concatenate the daily files and clean the column names.
-\item Remove identifier columns (for example IP addresses, ports, timestamps) so that models cannot memorize them.
-\item Replace infinite values by missing values and drop rows with missing values.
-\item Remove exact duplicates before splitting, so identical flows cannot appear in both training and test data.
-\item Keep the original label to define attack families, and create a binary label (benign or attack).
-\item Standardize features for the MLP only; fit the scaler on training data and apply it to test data.
-\item Decide whether corrected labels from the literature~\cite{engelen2021,lanvin2023} are used. \todo{decide after the first experiments}
-\end{itemize}
+The same preprocessing is applied before every experiment:
+\begin{enumerate}
+\item concatenate the daily files and clean the column names;
+\item remove identifier columns such as IP addresses, ports and timestamps, so that the models cannot memorize them;
+\item replace infinite values by missing values and drop the rows with missing values;
+\item remove exact duplicates before splitting, so that identical flows cannot appear in both the training and the test data;
+\item keep the original label to define the attack families and derive a binary label, benign or attack;
+\item standardize the features for the MLP only, fitting the scaler on the training data and applying it to the test data.
+\end{enumerate}
+Whether the corrected labels published in the literature~\cite{engelen2021,lanvin2023} are used will be decided after the first experiments. \todo{decide after the first experiments}
 
 \subsection{Evaluation Scenarios}
-\begin{itemize}
-\item \textbf{Task.} Binary classification: benign or attack.
-\item \textbf{Scenario A (random split).} Stratified random split, 70\% training and 30\% test.
-\item \textbf{Scenario B (unseen attacks).} Leave-one-attack-family-out: for each family, train on benign traffic and all other families, and test on benign traffic and the held-out family. This removes any arbitrary choice of which families to hide. \todo{define the families from the label names after inspecting the data}
-\item The recall on the held-out family measures how many unseen attacks are detected.
-\end{itemize}
+The task is binary classification: each flow is either benign or an attack. Two scenarios are compared with the same models and the same metrics. In Scenario A the data is split at random, stratified by class, into 70\% training and 30\% test data. In Scenario B whole attack families are held out: for each family, the models are trained on benign traffic and on all the other families, and tested on benign traffic and on the held-out family. Every family is held out in turn, which removes any arbitrary choice of which families to hide. \todo{define the families from the label names after inspecting the data} The recall on the held-out family measures how many unseen attacks are detected.
 
 \subsection{Models and Metrics}
-\begin{itemize}
-\item \textbf{Models.} Random Forest, XGBoost and an MLP, with default hyperparameters and no tuning, to keep the comparison simple and reproducible.
-\item \textbf{Metrics.} With the attack as the positive class and $TP$, $FP$, $TN$, $FN$ the usual counts,
+Three classifiers are compared: Random Forest, XGBoost and an MLP, all with default hyperparameters and without tuning, so that the comparison stays simple and reproducible. With the attack as the positive class and $TP$, $FP$, $TN$ and $FN$ the usual counts, the metrics are
 \begin{equation}
 \begin{gathered}
 P=\tfrac{TP}{TP+FP},\; R=\tfrac{TP}{TP+FN},\\
@@ -130,32 +103,17 @@ F_1=\tfrac{2PR}{P+R},\; FPR=\tfrac{FP}{FP+TN}.
 \end{gathered}
 \label{eq:metrics}
 \end{equation}
-\item \textbf{Statistics.} Each experiment is repeated with several random seeds, and the mean and standard deviation are reported. \todo{choose the number of repetitions according to computing time}
-\item \textbf{Ranking.} Models are ranked by $F_1$-score in both scenarios, and the rankings are compared (RQ3).
-\end{itemize}
+Each experiment is repeated with several random seeds, and the mean and the standard deviation are reported. \todo{choose the number of repetitions according to computing time} The models are ranked by $F_1$-score in both scenarios and the two rankings are compared, which answers RQ3.
 
 \subsection{Experimental Setup}
-\begin{itemize}
-\item Hardware and software: laptop specifications, Python, pandas, scikit-learn and XGBoost versions. \todo{fill in the exact versions after installation}
-\item All code and the LaTeX source are available in the project repository for reproducibility.
-\end{itemize}
+The experiments run on a laptop with Python, pandas, scikit-learn and XGBoost. \todo{fill in the exact laptop specifications and library versions after installation} All code and the LaTeX source are available in the project repository, so that the results can be reproduced.
 
 \section{Planned Platform and Intended Methodology}
 \subsection{Motivation and Scope}
-\begin{itemize}
-\item The author's dissertation aims at an edge-deployable platform that combines network monitoring with machine learning-based intrusion detection for small and medium networks.
-\item Monitoring tools such as Zabbix report device and performance status, and they do not detect attacks. Commercial appliances that do are expensive. \todo{add a reference for this statement}
-\item The platform is planned with low-cost, open-source components. The author has already worked on a Zabbix-based monitoring lab with a rule-based assistant. \todo{confirm this wording with the supervisor}
-\item This paper evaluates only the offline detection model (Sections III and V). The platform itself is planned and is \emph{not} evaluated here.
-\end{itemize}
+The author's dissertation aims at an edge-deployable platform that combines network monitoring with machine learning-based intrusion detection for small and medium networks. Monitoring tools such as Zabbix report device and performance status, and they do not detect attacks; the commercial appliances that do are expensive. \todo{add a reference for this statement} The platform is therefore planned with low-cost, open-source components, and the author has already worked on a Zabbix-based monitoring lab with a rule-based assistant. \todo{confirm this wording with the supervisor} This paper evaluates only the offline detection model, in Sections~III and~V; the platform itself is planned and is \emph{not} evaluated here.
 
 \subsection{Planned Architecture}
-\begin{itemize}
-\item An Ubuntu-based sensor receives a copy of the network traffic through a mirror port, so it sees the traffic without standing in its path. Kali Linux runs only inside the lab, to generate the attacks.
-\item The sensor extracts flow features, applies the detectors, and shows alerts with explanations on a dashboard (Fig.~\ref{fig:arch}).
-\item Integration with a monitoring tool such as Zabbix is optional and uses its API: the platform works with or without it.
-\item A language-model-based assistant will explain alerts to the administrator in plain language. It reads data from the detectors and, if enabled, from the monitoring tool.
-\end{itemize}
+An Ubuntu-based sensor receives a copy of the network traffic through a mirror port, so it sees the traffic without standing in its path, while Kali Linux runs only inside the lab to generate the attacks. The sensor extracts flow features, applies the detectors and shows alerts with explanations on a dashboard (Fig.~\ref{fig:arch}). Integration with a monitoring tool such as Zabbix is optional and uses its API, so the platform works with or without it. A language-model-based assistant will explain the alerts to the administrator in plain language. It reads data from the detectors and, if enabled, from the monitoring tool.
 
 \begin{figure}[t]
 \centering
@@ -179,35 +137,22 @@ F_1=\tfrac{2PR}{P+R},\; FPR=\tfrac{FP}{FP+TN}.
 \end{figure}
 
 \subsection{Intended Machine Learning Components}
+The platform is planned around four machine learning components:
 \begin{itemize}
-\item \textbf{Supervised detector} for known attack families: the models and evaluation of Section~III.
-\item \textbf{Anomaly detector} for behavior that was not seen in training, for example a sudden increase of the packet rate of a device: first a statistical baseline, then an unsupervised model such as Isolation Forest. \todo{choose the method after the first results and add references}
-\item \textbf{Explanations} of alerts with feature-importance methods for tree models. \todo{add references}
-\item \textbf{Edge profiling:} model size, prediction time and memory use on a single-board computer.
+\item a \emph{supervised detector} for known attack families, using the models and the evaluation of Section~III;
+\item an \emph{anomaly detector} for behavior that was not seen in training, for example a sudden increase of the packet rate of a device, starting from a statistical baseline and moving to an unsupervised model such as Isolation Forest; \todo{choose the method after the first results and add references}
+\item \emph{explanations} of the alerts, with feature-importance methods for tree models; \todo{add references}
+\item \emph{edge profiling}, that is the model size, the prediction time and the memory use on a single-board computer.
 \end{itemize}
 
 \subsection{Intended Lab Evaluation}
-\begin{itemize}
-\item The lab is a virtual enterprise network with several hosts, switches and a firewall, and a mirror port that feeds the sensor. \todo{confirm the images and tools available for the lab}
-\item Scripts generate the normal traffic. The attacks come from Kali Linux and match attack families of CIC-IDS2017, such as port scans, denial of service and brute force.
-\item Metrics: detection rate per attack, false alarm rate on normal traffic, time to detect, and CPU and memory use on the sensor.
-\item Performance is expected to drop between the public dataset and the lab traffic, and this drop is measured as part of the evaluation.
-\item Automatic blocking is an optional later step, with human approval and a list of addresses that are never blocked.
-\end{itemize}
+The lab is a virtual enterprise network with several hosts, switches and a firewall, and a mirror port that feeds the sensor. \todo{confirm the images and tools available for the lab} Scripts generate the normal traffic, while the attacks come from Kali Linux and match attack families of CIC-IDS2017 such as port scans, denial of service and brute force. The evaluation measures the detection rate per attack, the false alarm rate on normal traffic, the time to detect, and the CPU and memory use on the sensor. Performance is expected to drop between the public dataset and the lab traffic, and this drop is measured as part of the evaluation. Automatic blocking is an optional later step, with human approval and a list of addresses that are never blocked.
 
 \subsection{Current Status}
-\begin{itemize}
-\item Done: literature review and the design of the offline evaluation protocol.
-\item Next: the experiments of Section~III, then the lab, the anomaly detector and the dashboard.
-\end{itemize}
+The literature review and the design of the offline evaluation protocol are done. The next steps are the experiments of Section~III, followed by the lab, the anomaly detector and the dashboard.
 
 \section{Results}
-\begin{itemize}
-\item Class distribution after cleaning (table).
-\item Results of both scenarios for each model, as mean $\pm$ standard deviation (Table~\ref{tab:results}).
-\item Detection rate for each held-out attack family (bar chart).
-\item Answers to RQ1--RQ3, one sentence each.
-\end{itemize}
+This section will report the class distribution after cleaning, the results of both scenarios for each model as mean $\pm$ standard deviation (Table~\ref{tab:results}), and the detection rate for each held-out attack family. RQ1 to RQ3 will then be answered in one sentence each.
 
 \begin{table}[t]
 \caption{Planned results table (values to be added after the experiments)}
@@ -228,20 +173,10 @@ MLP & A / B & -- & -- & -- & -- \\
 \end{table}
 
 \section{Discussion}
-\begin{itemize}
-\item What the gap between the two scenarios means, and which attack families are hardest to detect.
-\item Comparison with published results on CIC-IDS2017~\cite{maseer2021,rosay2022} and with studies on unseen attacks~\cite{verkerken2022,hindy2020}.
-\item Implications for the planned platform: when retraining, anomaly detection or other safeguards are needed.
-\item Limitations: a single and older dataset; possible label errors~\cite{engelen2021,lanvin2023,liu2022}; family grouping; default hyperparameters; offline evaluation.
-\end{itemize}
+The discussion will explain what the gap between the two scenarios means and which attack families are hardest to detect, and it will compare the results with published figures on CIC-IDS2017~\cite{maseer2021,rosay2022} and with studies on unseen attacks~\cite{verkerken2022,hindy2020}. It will also state what the findings imply for the planned platform, in particular when retraining, anomaly detection or other safeguards are needed. The main limitations are the use of a single and older dataset, the label errors reported for it~\cite{engelen2021,lanvin2023,liu2022}, the grouping of labels into families, the use of default hyperparameters, and the fact that the evaluation is offline.
 
 \section{Conclusion}
-\begin{itemize}
-\item Main findings and answers to RQ1--RQ3, to be written after the results.
-\item Contributions: a reproducible comparison of random-split and held-out-attack evaluation.
-\item Limitations, as listed in the discussion.
-\item Future work: the platform described in Section~IV, with tests on traffic from the author's own virtual lab, an anomaly detector, explanations of alerts, measurements on a single-board computer, and an optional response module with human approval.
-\end{itemize}
+The conclusion will summarize the main findings and the answers to RQ1 to RQ3 once the results are available. The contribution is a reproducible comparison of random-split and held-out-attack evaluation, under the limitations listed in the discussion. Future work is the platform described in Section~IV, with tests on traffic from the author's own virtual lab, an anomaly detector, explanations of alerts, measurements on a single-board computer, and an optional response module with human approval.
 
 \section*{Author Contributions}
 A.~M.~Naji: Conceptualization, Methodology, Writing -- original draft, Writing -- review and editing.
